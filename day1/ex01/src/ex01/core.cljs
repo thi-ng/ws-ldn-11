@@ -166,6 +166,6 @@
           (dom/by-id "stats") (f/format ["Canvas: " (f/float 3) " ms"] fps))
          true)))))
 
-;;(main-svg)
+(main-svg)
 ;;(main-svg-attribs)
 ;;(main-canvas)
