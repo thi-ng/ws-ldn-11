@@ -65,6 +65,13 @@
                [:video {:width w :height h :hidden true :autoplay true}]
                (.-body js/document))]
     (cond
+      (aget js/navigator "mediaDevices")
+      (-> js/navigator
+          .-mediaDevices
+          (.getUserMedia #js {:video true})
+          (.then #(activate-rtc-stream video %))
+          (.catch #(set-stream-state! :forbidden)))
+
       (aget js/navigator "webkitGetUserMedia")
       (.webkitGetUserMedia js/navigator #js {:video true}
                            #(activate-rtc-stream video %)
@@ -139,11 +146,11 @@
         ;; render cube to main canvas
         ;;(gl/bind (:fbo-tex scene) 0)
         #_(doto gl
-          (gl/set-viewport view)
-          (gl/draw-with-shader
-           (-> (:cube scene)
-               (cam/apply
-                (cam/perspective-camera
-                 {:eye (vec3 0 0 1.25) :fov 90 :aspect view}))
-               (assoc-in [:uniforms :model] (-> M44 (g/rotate-x t) (g/rotate-y (* t 2))))))))
+            (gl/set-viewport view)
+            (gl/draw-with-shader
+             (-> (:cube scene)
+                 (cam/apply
+                  (cam/perspective-camera
+                   {:eye (vec3 0 0 1.25) :fov 90 :aspect view}))
+                 (assoc-in [:uniforms :model] (-> M44 (g/rotate-x t) (g/rotate-y (* t 2))))))))
       (:active (reagent/state this)))))
