@@ -63,11 +63,11 @@
   [w h]
   (let [video (dom/create-dom!
                [:video {:width w :height h :hidden true :autoplay true}]
-               (.-body js/document))]
+               (.-body js/document))
+        mdev  (aget js/navigator "mediaDevices")]
     (cond
-      (aget js/navigator "mediaDevices")
-      (-> js/navigator
-          .-mediaDevices
+      (and mdev (aget mdev "getUserMedia"))
+      (-> mdev
           (.getUserMedia #js {:video true})
           (.then #(activate-rtc-stream video %))
           (.catch #(set-stream-state! :forbidden)))
