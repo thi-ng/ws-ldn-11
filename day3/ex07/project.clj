@@ -10,12 +10,11 @@
                  [org.clojure/clojurescript "1.8.51"]
                  [org.clojure/core.async "0.2.374"
                   :exclusions [org.clojure/tools.reader]]
-                 [thi.ng/geom "0.0.1158-SNAPSHOT"]
+                 [thi.ng/geom "0.0.1173-SNAPSHOT"]
                  [thi.ng/domus "0.3.0-SNAPSHOT"]
-                 [reagent "0.5.1"]
-                 [cljsjs/localforage "1.3.1-0"]]
+                 [reagent "0.5.1"]]
 
-  :plugins      [[lein-figwheel "0.5.0-6"]
+  :plugins      [[lein-figwheel "0.5.4-3"]
                  [lein-cljsbuild "1.1.3" :exclusions [[org.clojure/clojure]]]]
 
   :source-paths ["src"]
@@ -23,7 +22,7 @@
   :clean-targets ^{:protect false} ["resources/public/js/compiled" "target"]
 
   :cljsbuild {:builds
-              [{:id           "dev1"
+              [{:id           "dev"
                 :source-paths ["src"]
                 :figwheel     true
                 :compiler     {:main                 ex07.core
