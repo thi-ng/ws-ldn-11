@@ -4,7 +4,7 @@
 
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [org.clojure/clojurescript "1.8.51"]
-                 [thi.ng/geom "0.0.1177-SNAPSHOT"]
+                 [thi.ng/geom "0.0.1178-SNAPSHOT"]
                  [reagent "0.5.1"]]
 
   :plugins      [[lein-figwheel "0.5.4-3"]
@@ -28,9 +28,9 @@
                                :output-to     "resources/public/js/dummy.js"
                                :modules       {:cljs-base  {:output-to "resources/public/js/base.js"}
                                                :app        {:output-to "resources/public/js/compiled/app.js"
-                                                            :entries   #{ex05b.core}}
+                                                            :entries   #{"ex05b.core"}}
                                                :meshworker {:output-to  "resources/public/js/meshworker.js"
-                                                            :entries    #{meshworker}}}}}
+                                                            :entries    #{"meshworker"}}}}}
                {:source-paths ["src"]
                 :id           "min"
                 :compiler     {:optimizations :advanced
@@ -38,6 +38,6 @@
                                :output-to     "resources/public/js/dummy.js"
                                :modules       {:cljs-base  {:output-to "resources/public/js/base.js"}
                                                :app        {:output-to "resources/public/js/compiled/app.js"
-                                                            :entries   #{ex05b.core}}
+                                                            :entries   #{"ex05b.core"}}
                                                :meshworker {:output-to  "resources/public/js/meshworker.js"
-                                                            :entries    #{meshworker}}}}}]})
+                                                            :entries    #{"meshworker"}}}}}]})

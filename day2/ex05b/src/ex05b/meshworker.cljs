@@ -31,7 +31,7 @@
                   #(glm/gl-mesh % #{:fnorm}))
         bounds   (g/bounds mesh)
         tx       (-> mat/M44
-                     (g/scale (/ 1.0 (reduce max (:size bounds))))
+                     (g/scale (/ 1.0 (-> bounds :size :y)))
                      (g/translate (m/- (g/centroid bounds))))
         vertices (-> mesh .-vertices .-buffer)
         fnormals (-> mesh .-fnormals .-buffer)
