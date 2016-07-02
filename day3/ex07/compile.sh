@@ -11,9 +11,10 @@ emcc -O2 -s ASM_JS=1 -s INVOKE_RUN=0 \
      -s EXPORTED_FUNCTIONS="['_main','_initParticleSystem','_updateParticleSystem','_getNumParticles','_getParticleComponent','_getParticlesPointer']" \
      -s "EXPORT_NAME='Particles'" \
      -s MODULARIZE=1 \
+     --memory-init-file 0 \
      --closure 1 \
      -o resources/public/js/native.js \
      particles.c
 
 # copy memory initialization file to main webroot dir
-cp resources/public/js/native.js.mem resources/public/
+# cp resources/public/js/native.js.mem resources/public/

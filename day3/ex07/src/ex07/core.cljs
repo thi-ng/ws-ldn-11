@@ -76,6 +76,8 @@
               (.arc x y 2 0 m/TWO_PI)
               (.fill))
             (recur (inc i)))))
+      (set! (.-fillStyle ctx) "white")
+      (.fillText ctx (str "nump: " num) 20 20)
       (:active (reagent/state this)))))
 
 (def shader-spec

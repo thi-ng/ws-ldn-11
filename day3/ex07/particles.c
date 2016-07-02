@@ -5,7 +5,12 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <math.h>
+
+#ifdef __EMSCRIPTEN__
 #include <emscripten.h>
+#else
+#define EMSCRIPTEN_KEEPALIVE
+#endif
 
 #define MIN(X,Y) ((X) < (Y) ? (X) : (Y))
 
@@ -20,15 +25,15 @@ typedef struct {
 } Particle;
 
 typedef struct {
-  Particle *particles;
-  uint32_t numParticles;
-  uint32_t maxParticles;
-  Vec3 emitPos;
-  Vec3 emitDir;
-  Vec3 gravity;
-  float speed;
-  uint32_t age;
-  uint32_t maxAge;
+  Particle *particles;   // 4 bytes
+  uint32_t numParticles; // 4
+  uint32_t maxParticles; // 4
+  Vec3 emitPos;          // 12
+  Vec3 emitDir;          // 12
+  Vec3 gravity;          // 12
+  float speed;           // 4
+  uint32_t age;          // 4
+  uint32_t maxAge;       // 4
 } ParticleSystem;
 
 static inline void setVec3(Vec3 *v, float x, float y, float z) {
@@ -100,7 +105,7 @@ static ParticleSystem* makeParticleSystem(uint32_t num) {
   return psys;
 }
 
-ParticleSystem* initParticleSystem(uint32_t num, uint32_t maxAge, float emitX, float gravityY, float speed) {
+EMSCRIPTEN_KEEPALIVE ParticleSystem* initParticleSystem(uint32_t num, uint32_t maxAge, float emitX, float gravityY, float speed) {
   ParticleSystem *psys = makeParticleSystem(num);
   setVec3(&psys->emitPos, emitX, 1.f, 0.f);
   setVec3(&psys->emitDir, 0.f, 1.f, 0.f);
@@ -110,13 +115,13 @@ ParticleSystem* initParticleSystem(uint32_t num, uint32_t maxAge, float emitX, f
   return psys;
 }
 
-ParticleSystem* updateParticleSystem(ParticleSystem* psys) {
+EMSCRIPTEN_KEEPALIVE ParticleSystem* updateParticleSystem(ParticleSystem* psys) {
   if (psys->age == psys->maxAge) {
     psys->numParticles = 0;
     psys->age = 0;
   }
   if (psys->numParticles < psys->maxParticles) {
-    uint32_t limit = MIN(psys->numParticles + 10, psys->maxParticles);
+    uint32_t limit = MIN(psys->numParticles + 50, psys->maxParticles);
     while(psys->numParticles < limit) {
       emitParticle(psys);
     }
@@ -127,15 +132,17 @@ ParticleSystem* updateParticleSystem(ParticleSystem* psys) {
     addVec3(&p->vel, &psys->gravity);
     if (p->pos.y < 0) {
       p->pos.y = 0;
-      p->vel.y *= -0.88f;
+      p->vel.y *= -1.0f;
     }
   }
   psys->age++;
   return psys;
 }
 
-/*int main(int argc, char** argv) {
-  printf("Hello Emscripten!\n");
-  printf("Particle size: %u\n", sizeof(Particle));
+/*
+int main() {
+  char *foo = "Hello Emscripten!";
+  printf("%s\n", foo);
   return 0;
-  }*/
+}
+*/
