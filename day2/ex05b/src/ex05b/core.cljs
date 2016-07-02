@@ -20,9 +20,9 @@
 (defonce app (reagent/atom {}))
 
 (def meshes
-  ["../assets/suzanne.stl"
-   "../assets/deadpool.stl"
-   "../assets/voxel.stl"])
+  [["../assets/suzanne.stl" "Blender Suzanne (788 KB)"]
+   ["../assets/deadpool.stl" "Deadpool (2 MB)"]
+   ["../assets/voxel.stl" "Voxel (11.2 MB)"]])
 
 (defn trigger-mesh-change!
   [uri]
@@ -109,7 +109,7 @@
        {:default-value @sel
         :on-change     #(trigger-mesh-change! (-> % .-target .-value))}
        [:option "Choose:"]
-       (for [o meshes] [:option {:key o :value o} o])])))
+       (for [[val label] meshes] [:option {:key val :value val} label])])))
 
 (defn app-component
   []
