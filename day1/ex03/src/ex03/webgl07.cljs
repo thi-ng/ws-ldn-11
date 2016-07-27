@@ -15,35 +15,51 @@
    [thi.ng.geom.attribs :as attr]
    [thi.ng.color.core :as col]
    [thi.ng.glsl.core :as glsl :include-macros true]
-   [thi.ng.glsl.vertex :as vertex]))
+   [thi.ng.glsl.vertex :as vertex]
+   [thi.ng.glsl.lighting :as light]))
 
 (enable-console-print!)
 
 (def shader-spec
   {:vs "void main() {
-    vUV = uv;
-    gl_Position = proj * view * model * vec4(position, 1.0);
-    }"
-   :fs "void main() { gl_FragColor = texture2D(tex, vUV); }"
-   :uniforms {:model    [:mat4 M44]
-              :view     :mat4
-              :proj     :mat4
-              :tex      :sampler2D}
+          vUV = uv;
+          vNormal = normal;
+          gl_Position = proj * view * model * vec4(position, 1.0);
+        }"
+   :fs (->> "void main() {
+               float lam = lambert(surfaceNormal(vNormal, normalMat), normalize(lightDir));
+               vec3 diffuse = texture2D(tex, vUV).rgb;
+               vec3 col = ambientCol + diffuse * lightCol * lam;
+               gl_FragColor = vec4(col, 1.0);
+             }"
+            (glsl/glsl-spec-plain [vertex/surface-normal light/lambert])
+            (glsl/assemble))
+   :uniforms {:model      [:mat4 M44]
+              :view       :mat4
+              :proj       :mat4
+              :normalMat  [:mat4 (gl/auto-normal-matrix :model :view)]
+              :tex        :sampler2D
+              :lightDir   [:vec3 [1 0 1]]
+              :lightCol   [:vec3 [1 1 1]]
+              :ambientCol [:vec3 [0 0 0.1]]}
    :attribs  {:position :vec3
+              :normal   :vec3
               :uv       :vec2}
-   :varying  {:vUV      :vec2}
+   :varying  {:vUV      :vec2
+              :vNormal  :vec3}
    :state    {:depth-test true}})
 
 (defn ^:export demo
   []
   (let [gl         (gl/gl-context "main")
         view-rect  (gl/get-viewport-rect gl)
-        sphere-res 40
+        sphere-res 32
         model      (-> (s/sphere 1)
                        (g/center)
-                       (g/as-mesh {:mesh    (glm/gl-mesh 4096 #{:uv})
+                       (g/as-mesh {:mesh    (glm/gl-mesh 4096 #{:uv :vnorm})
                                    :res     sphere-res
-                                   :attribs {:uv (attr/supplied-attrib :uv (fn [[u v]] (vec2 (- 1 u) v)))}})
+                                   :attribs {:uv    (attr/supplied-attrib :uv (fn [[u v]] (vec2 (- 1 u) v)))
+                                             :vnorm (fn [_ _ v _] (m/normalize v))}})
                        (gl/as-gl-buffer-spec {})
                        (cam/apply
                         (cam/perspective-camera
