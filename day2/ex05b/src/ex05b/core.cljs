@@ -12,10 +12,46 @@
    [thi.ng.geom.gl.webgl.animator :as anim]
    [thi.ng.geom.gl.shaders :as sh]
    [thi.ng.geom.gl.glmesh :as glm]
-   [thi.ng.geom.gl.shaders.phong :as phong]
+   [thi.ng.glsl.core :as glsl :include-macros true]
+   [thi.ng.glsl.vertex :as vertex]
    [reagent.core :as reagent]))
 
 (defonce app (reagent/atom {}))
+
+(def shader-spec
+  {:vs
+   (glsl/assemble
+    (glsl/glsl-spec
+     [vertex/surface-normal]
+     "void main(){
+      vec4 worldPos = model * vec4(position, 1.0);
+      vec4 eyePos = view * worldPos;
+      vEyePos = eyePos.xyz;
+      vNormal = surfaceNormal(normal, normalMat);
+      vLightPos = (view * vec4(lightPos, 1.0)).xyz;
+      gl_Position = proj * eyePos;
+  }"))
+   :fs
+   "void main(){
+      vec3 L = normalize(vLightPos - vEyePos);
+      vec3 N = normalize(vNormal);
+      vec3 col = col0 * clamp(dot(N, L), 0.0, 1.0) + col1 * (1.0 - abs(dot(N, L))) + col2 * clamp(dot(-N,L), 0.0, 1.0);
+      gl_FragColor=vec4(col, 1.0);
+  }"
+   :uniforms {:view      :mat4
+              :proj      :mat4
+              :model     [:mat4 M44]
+              :normalMat [:mat4 (gl/auto-normal-matrix :model :view)]
+              :col0      [:vec3 [0.3 0.3 0.3]]
+              :col1      [:vec3 [1 1 1]]
+              :col2      [:vec3 [0 0 0]]
+              :lightPos  [:vec3 [0 1 2]]}
+   :attribs {:position [:vec3 0]
+             :normal   [:vec3 1]}
+   :varying {:vNormal   :vec3
+             :vEyePos   :vec3
+             :vLightPos :vec3}
+   :state    {:depth-test true}})
 
 (def meshes
   [["../assets/suzanne.stl" "Blender Suzanne (788 KB)"]
@@ -49,17 +85,11 @@
   [this]
   (let [gl       (gl/gl-context (reagent/dom-node this))
         vport    (gl/get-viewport-rect gl)
-        shader   (sh/make-shader-from-spec gl phong/shader-spec)
+        shader   (sh/make-shader-from-spec gl shader-spec)
         uniforms {:model         mat/M44
                   :proj          (mat/perspective 60 vport 0.1 10)
                   :view          (mat/look-at (v/vec3 0 0 1.25) (v/vec3) v/V3Y)
-                  :lightPos      (v/vec3 0.1 0 1)
-                  :ambientCol    0x000011
-                  :diffuseCol    0x0033ff
-                  :specularCol   0xffffff
-                  :shininess     100
-                  :wrap          0
-                  :useBlinnPhong true}]
+                  :lightPos      (v/vec3 0.1 0 1)}]
     (swap! app assoc
            :gl       gl
            :viewport vport
